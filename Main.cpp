@@ -2,10 +2,9 @@
 #include <thread>
 #include "init.h"
 #include "Item.h"
+#include "gate.h"
 
 int tmp_x, tmp_y;
-
-
 
 void LoadStage(int stage)
 {
@@ -149,7 +148,7 @@ void init_draw()
 }
 void collision()
 {   
-    for (int i = 0; i < itemList.size(); i++)
+    for (int i = 0; i < itemList.size(); i++)   // 아이템 충돌
     {
         if (y == itemList[i].first && x == itemList[i].second)
         {
@@ -167,6 +166,11 @@ void collision()
             }
         }
     }
+
+    if (map[x][y] == '1' || map[x][y] == '2' || map[x][y] == '4')
+    {
+        running = false;
+    }
 }
 
 
@@ -178,6 +182,7 @@ int main()
     init_draw();
 
     thread key_thread(keyControl);
+    create_gate();
 
     while (running)
     {  
