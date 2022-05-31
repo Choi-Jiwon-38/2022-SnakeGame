@@ -1,31 +1,11 @@
-// 20213091 최지원
-
-#include <iostream>
-#include <ncurses.h>
 #include <fstream>
-#include <vector>
 #include <thread>
+#include "init.h"
+#include "Item.h"
 
-#define WIDTH_GB 25        // GameBoard 가로 길이
-#define HEIGHT_GB 25       // GameBoard 세로 길이
-#define WIDTH_SMB 19       // ScoreBoard, MissionBoard 가로 길이
-#define HEIGHT_SMB 12      // ScoreBoard, MissionBoard 세로 길이
+int tmp_x, tmp_y;
 
-using namespace std;
 
-int x = 11, y = 12;
-
-vector<pair<int, int> > snake;
-
-char map[25][25];
-
-bool running = true;
-
-WINDOW *GameBoard;
-WINDOW *ScoreBoard;
-WINDOW *MissionBoard;
-
-static int key = KEY_LEFT; 
 
 void LoadStage(int stage)
 {
@@ -57,13 +37,13 @@ void keyControl()
             if((input == KEY_UP && key == KEY_DOWN) || (input == KEY_DOWN && key == KEY_UP)
                 || (input == KEY_LEFT && key == KEY_RIGHT) || (input == KEY_RIGHT && key == KEY_LEFT))
                 {
-                running = false;
+                    running = false;
                 }
             key = input;
         }
         else if(input == 27)
         {
-        running = false;
+            running = false;
         }
     }
 }
@@ -79,7 +59,6 @@ void using_color()
 }
 void init()
 {
-
     initscr();                                  // Curses 모드 시작
     keypad(stdscr, TRUE);
     curs_set(0);                                // 커서 제거 (커서 깜빡임)
@@ -96,9 +75,10 @@ void init()
 
     for (int i = 0; i < snake.size(); i++)
     {
-        map[snake[i].first][snake[i].second] = 4;
+        map[snake[i].first][snake[i].second] = '4';
     }
 }
+
 
 void init_draw()
 {
@@ -115,8 +95,10 @@ void init_draw()
     border('#', '#', '#', '#', '#', '#', '#', '#');
     refresh();
 
+    create_item();
+
     GameBoard = newwin(HEIGHT_GB, WIDTH_GB, 2, 2); // 행 크기, 열 크기, 시작 y좌표, 시작 x좌표
-    for (int i = 0; i < HEIGHT_GB; i++)
+    for(int i = 0; i < HEIGHT_GB; i++)
     {
         for(int j = 0; j < WIDTH_GB; j++)
         {
@@ -131,7 +113,18 @@ void init_draw()
                 case '2':
                     mvwaddch(GameBoard, i, j, '*' | COLOR_PAIR(4));
                     break;
-                
+                case '3':
+                    mvwaddch(GameBoard, i, j, '*' | COLOR_PAIR(6));
+                    break;
+                case '4':
+                    mvwaddch(GameBoard, i, j, '-' | COLOR_PAIR(6));
+                    break;
+                case '5':
+                    mvwaddch(GameBoard, i, j, 'G' | COLOR_PAIR(6));
+                    break;
+                case '6':
+                    mvwaddch(GameBoard, i, j, 'P' | COLOR_PAIR(6));
+                    break;
             }
         }
         wrefresh(GameBoard);
@@ -154,20 +147,40 @@ void init_draw()
     wrefresh(ScoreBoard);
     wrefresh(MissionBoard);
 }
+void collision()
+{   
+    for (int i = 0; i < itemList.size(); i++)
+    {
+        if (y == itemList[i].first && x == itemList[i].second)
+        {
+            if (map[y][x] == '5')
+            {
+                snake.push_back(pair<int, int> (tmp_y, tmp_x));
+                itemList.erase(itemList.begin() + i);
+                break;
+            }
+            else if (map[y][x] == '6')
+            {
+                snake.pop_back();
+                itemList.erase(itemList.begin() + i);
+                break;
+            }
+        }
+    }
+}
 
 
 int main()
 {
-    LoadStage(1);
+    LoadStage(0);
 
     init();
     init_draw();
 
-    int tmp_x, tmp_y;
     thread key_thread(keyControl);
 
     while (running)
-    {   
+    {  
         map[y][x] = '0';
         for (int i = 0; i < snake.size(); i++)
         {
@@ -192,7 +205,11 @@ int main()
             y--;
         else if (key == KEY_DOWN)
             y++;
+
+        remove_item();
         
+        collision();
+
         map[y][x] = '3';
 
         for (int i = 0; i < snake.size(); i++)
@@ -201,38 +218,47 @@ int main()
         }
 
         refresh();
+
         
+
         GameBoard = newwin(HEIGHT_GB, WIDTH_GB, 2, 2); // 행 크기, 열 크기, 시작 y좌표, 시작 x좌표
 
-    for(int i = 0; i < HEIGHT_GB; i++)
-    {
-        for(int j = 0; j < WIDTH_GB; j++)
+        for(int i = 0; i < HEIGHT_GB; i++)
         {
-            switch (map[i][j])
+            for(int j = 0; j < WIDTH_GB; j++)
             {
-                case '0':
-                    mvwaddch(GameBoard, i, j, ' ' | COLOR_PAIR(1));
-                    break;
-                case '1':
-                    mvwaddch(GameBoard, i, j, '#' | COLOR_PAIR(5));
-                    break;
-                case '2':
-                    mvwaddch(GameBoard, i, j, '*' | COLOR_PAIR(4));
-                    break;
-                case '3':
-                    mvwaddch(GameBoard, i, j, '*' | COLOR_PAIR(6));
-                    break;
-                
+                switch (map[i][j])
+                {
+                    case '0':
+                        mvwaddch(GameBoard, i, j, ' ' | COLOR_PAIR(1));
+                        break;
+                    case '1':
+                        mvwaddch(GameBoard, i, j, '#' | COLOR_PAIR(5));
+                        break;
+                    case '2':
+                        mvwaddch(GameBoard, i, j, '*' | COLOR_PAIR(4));
+                        break;
+                    case '3':
+                        mvwaddch(GameBoard, i, j, '*' | COLOR_PAIR(6));
+                        break;
+                    case '4':
+                        mvwaddch(GameBoard, i, j, '-' | COLOR_PAIR(6));
+                        break;
+                    case '5':
+                        mvwaddch(GameBoard, i, j, 'G' | COLOR_PAIR(6));
+                        break;
+                    case '6':
+                        mvwaddch(GameBoard, i, j, 'P' | COLOR_PAIR(6));
+                        break;
+                }
             }
+            wrefresh(GameBoard);
         }
-        wrefresh(GameBoard);
-    }
 
-        this_thread::sleep_for(chrono::milliseconds(500));
+        this_thread::sleep_for(chrono::milliseconds(200));
     }
-    if(key_thread.joinable())
+    if ( key_thread.joinable() )
         key_thread.join();
 
     return 0;
 }
-
