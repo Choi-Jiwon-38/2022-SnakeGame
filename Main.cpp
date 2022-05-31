@@ -21,7 +21,6 @@ char map[25][25];
 
 bool running = true;
 
-
 WINDOW *GameBoard;
 WINDOW *ScoreBoard;
 WINDOW *MissionBoard;
@@ -31,7 +30,7 @@ static int key = KEY_LEFT;
 void LoadStage(int stage)
 {
     ifstream fin;
-    fin.open("data/map/stage_0.txt");
+    fin.open("data/map/stage_" + to_string(stage) + ".txt");
 
     char temp[WIDTH_GB + 1];
     for (int i = 0; i < WIDTH_GB; i++)
