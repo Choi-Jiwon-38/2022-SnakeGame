@@ -146,6 +146,64 @@ void init_draw()
     wrefresh(ScoreBoard);
     wrefresh(MissionBoard);
 }
+void change_dir_pos(int dir, int new_x, int new_y)
+{
+    for(int i = snake.size() - 1; i > 0; i--)
+    {   
+        if (i == 1)
+        {
+            snake[1].first = new_y, snake[1].second = new_x;
+        }
+        snake[i] = snake[i-1];
+    }
+    snake[0].first = new_y;
+    snake[0].second = new_x;
+
+    key = dir;
+    x = new_x;
+    y = new_y;
+}
+
+void using_gate()
+{
+    int tp_x, tp_y;
+
+    bool flag = false;
+
+    if (y == gate_pos[0].first && x == gate_pos[0].second)
+    {
+        tp_y = gate_pos[1].first;
+        tp_x = gate_pos[1].second;
+        flag = true;
+    }
+    else if (y == gate_pos[1].first && x == gate_pos[1].second)
+    {
+        tp_y = gate_pos[0].first;
+        tp_x = gate_pos[0].second;
+        flag = true;
+    }
+    if (flag)
+    {
+        if (tp_x == 0)
+        {   
+            change_dir_pos(KEY_RIGHT, tp_x + 1, tp_y);
+        }
+        else if (tp_x == WIDTH_GB - 1)
+        {
+            change_dir_pos(KEY_LEFT, tp_x - 1, tp_y);
+        }
+        else if (tp_y == 0)
+        {
+            change_dir_pos(KEY_DOWN, tp_x ,tp_y + 1);
+        }
+        else if (tp_y == HEIGHT_GB - 1)
+        {
+            change_dir_pos(KEY_UP, tp_x, tp_y - 1);
+        }
+    }
+
+}
+
 void collision()
 {   
     for (int i = 0; i < itemList.size(); i++)   // 아이템 충돌
@@ -171,8 +229,8 @@ void collision()
     {
         running = false;
     }
+    using_gate();
 }
-
 
 int main()
 {

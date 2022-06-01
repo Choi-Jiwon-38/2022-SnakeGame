@@ -2,12 +2,17 @@
 #include <cstdlib>
 #include <ctime>
 
+vector<pair<int, int> > gate_pos;
+
 void create_gate()
 {
     srand(time(NULL));
 
     int gate_x1, gate_y1;
     int gate_x2, gate_y2;
+
+    for (int i = 0; i < gate_pos.size(); i++)
+        gate_pos.pop_back();
 
     while (1)                               // Gate 한쪽 먼저 설정
     {
@@ -19,6 +24,7 @@ void create_gate()
             continue;
         }
         map[gate_y1][gate_x1] = '7';
+        gate_pos.push_back(pair<int, int> (gate_y1, gate_x1));
         break;
     }
     while (1)
@@ -30,6 +36,7 @@ void create_gate()
             continue;
         }
         map[gate_y2][gate_x2] = '7';
+        gate_pos.push_back(pair<int, int> (gate_y2, gate_x2));
         break;
     }
 }
