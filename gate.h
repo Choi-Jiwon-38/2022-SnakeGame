@@ -4,15 +4,14 @@
 
 vector<pair<int, int> > gate_pos;
 
+bool g_using;
+
 void create_gate()
 {
     srand(time(NULL));
 
     int gate_x1, gate_y1;
     int gate_x2, gate_y2;
-
-    for (int i = 0; i < gate_pos.size(); i++)
-        gate_pos.pop_back();
 
     while (1)                               // Gate 한쪽 먼저 설정
     {

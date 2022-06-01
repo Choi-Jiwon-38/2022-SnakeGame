@@ -5,6 +5,7 @@
 #include "gate.h"
 
 int tmp_x, tmp_y;
+bool flag = false;
 
 void LoadStage(int stage)
 {
@@ -27,22 +28,29 @@ void keyControl()
     int input;
 
     while(running)
-    {
-        input = getch();
+    {   
+        if (flag == false)
+        {
+            input = getch();
 
-        if(input == KEY_UP || input == KEY_DOWN || input == KEY_LEFT || input == KEY_RIGHT)
-        {
-        // 입력 진행과 반대 방향의 키를 입력하면 게임 종료
-            if((input == KEY_UP && key == KEY_DOWN) || (input == KEY_DOWN && key == KEY_UP)
-                || (input == KEY_LEFT && key == KEY_RIGHT) || (input == KEY_RIGHT && key == KEY_LEFT))
-                {
-                    running = false;
-                }
-            key = input;
+            if(input == KEY_UP || input == KEY_DOWN || input == KEY_LEFT || input == KEY_RIGHT)
+            {
+                if((input == KEY_UP && key == KEY_DOWN) || (input == KEY_DOWN && key == KEY_UP)
+                    || (input == KEY_LEFT && key == KEY_RIGHT) || (input == KEY_RIGHT && key == KEY_LEFT))
+                    {
+                        running = false;
+                    }
+                key = input;
+            }
+            else if(input == 27)
+            {
+                running = false;
+            }
         }
-        else if(input == 27)
+        else
         {
-            running = false;
+            flag = false;
+            continue;
         }
     }
 }
@@ -148,27 +156,18 @@ void init_draw()
 }
 void change_dir_pos(int dir, int new_x, int new_y)
 {
-    for(int i = snake.size() - 1; i > 0; i--)
-    {   
-        if (i == 1)
-        {
-            snake[1].first = new_y, snake[1].second = new_x;
-        }
-        snake[i] = snake[i-1];
-    }
-    snake[0].first = new_y;
-    snake[0].second = new_x;
-
-    key = dir;
     x = new_x;
     y = new_y;
+    key = dir;
 }
+
+int gate_count, gate_snake_size;
+bool flag_gateUsing = false;
 
 void using_gate()
 {
     int tp_x, tp_y;
 
-    bool flag = false;
 
     if (y == gate_pos[0].first && x == gate_pos[0].second)
     {
@@ -182,8 +181,13 @@ void using_gate()
         tp_x = gate_pos[0].second;
         flag = true;
     }
+
     if (flag)
-    {
+    {   
+        flag_gateUsing = true;
+        gate_count = 0;
+        gate_snake_size = snake.size();
+
         if (tp_x == 0)
         {   
             change_dir_pos(KEY_RIGHT, tp_x + 1, tp_y);
@@ -197,9 +201,40 @@ void using_gate()
             change_dir_pos(KEY_DOWN, tp_x ,tp_y + 1);
         }
         else if (tp_y == HEIGHT_GB - 1)
-        {
+        {  
             change_dir_pos(KEY_UP, tp_x, tp_y - 1);
         }
+        else
+        {
+            if (key == KEY_RIGHT)
+            {
+                if (map[tp_y][tp_x + 1] != '1' && map[tp_y][tp_x + 1] != '2') { change_dir_pos(KEY_RIGHT, tp_x + 1, tp_y); }
+                else if (map[tp_y + 1][tp_x] != '1' && map[tp_y + 1][tp_x] != '2') { change_dir_pos(KEY_DOWN, tp_x, tp_y + 1); }
+                else if (map[tp_y - 1][tp_x] != '1' && map[tp_y - 1][tp_x] != '2') { change_dir_pos(KEY_UP, tp_x, tp_y - 1); }
+                else if (map[tp_y - 1][tp_x] != '1' && map[tp_y - 1][tp_x] != '2') { change_dir_pos(KEY_LEFT, tp_x - 1, tp_y); }
+            }
+            else if (key == KEY_DOWN)
+            {
+                if (map[tp_y + 1][tp_x] != '1' && map[tp_y + 1][tp_x] != '2') { change_dir_pos(KEY_DOWN, tp_x, tp_y + 1); }
+                else if (map[tp_y][tp_x - 1] != '1' && map[tp_y][tp_x - 1] != '2') { change_dir_pos(KEY_LEFT, tp_x - 1, tp_y); }
+                else if (map[tp_y][tp_x + 1] != '1' && map[tp_y][tp_x + 1] != '2') { change_dir_pos(KEY_RIGHT, tp_x + 1, tp_y); }
+                else if (map[tp_y - 1][tp_x] != '1' && map[tp_y - 1][tp_x] != '2') { change_dir_pos(KEY_UP, tp_x, tp_y - 1); }
+            }
+            else if (key == KEY_LEFT)
+            {
+                if (map[tp_y][tp_x - 1] != '1' && map[tp_y][tp_x - 1] != '2') { change_dir_pos(KEY_LEFT, tp_x - 1, tp_y); }
+                else if (map[tp_y - 1][tp_x] != '1' && map[tp_y - 1][tp_x] != '2') { change_dir_pos(KEY_UP, tp_x, tp_y - 1); }
+                else if (map[tp_y + 1][tp_x] != '1' && map[tp_y + 1][tp_x] != '2') { change_dir_pos(KEY_DOWN, tp_x, tp_y + 1); }
+                else if (map[tp_y][tp_x + 1] != '1' && map[tp_y][tp_x + 1] != '2') { change_dir_pos(KEY_RIGHT, tp_x + 1, tp_y); }
+            }
+            else if (key == KEY_UP)
+            {
+                if (map[tp_y - 1][tp_x] != '1' && map[tp_y - 1][tp_x] != '2') { change_dir_pos(KEY_UP, tp_x, tp_y - 1); }
+                else if (map[tp_y][tp_x + 1] != '1' && map[tp_y][tp_x + 1] != '2') { change_dir_pos(KEY_RIGHT, tp_x + 1, tp_y); }
+                else if (map[tp_y][tp_x + 1] != '1' && map[tp_y][tp_x - 1] != '2') { change_dir_pos(KEY_LEFT, tp_x - 1, tp_y); }
+                else if (map[tp_y + 1][tp_x] != '1' && map[tp_y + 1][tp_x] != '2') { change_dir_pos(KEY_DOWN, tp_x, tp_y + 1); }
+            }
+        }   
     }
 
 }
@@ -227,9 +262,27 @@ void collision()
 
     if (map[x][y] == '1' || map[x][y] == '2' || map[x][y] == '4')
     {
-        running = false;
+        // running = false;
     }
+
     using_gate();
+
+    if (flag_gateUsing)
+    {
+        if (gate_count > gate_snake_size)
+        {
+            flag_gateUsing = false;
+            
+            map[gate_pos[0].first][gate_pos[0].second] = '1';
+            map[gate_pos[1].first][gate_pos[1].second] = '1';
+
+            gate_pos.pop_back();
+            gate_pos.pop_back();
+
+            create_gate();
+        }
+        gate_count++;
+    }
 }
 
 int main()
@@ -241,6 +294,8 @@ int main()
 
     thread key_thread(keyControl);
     create_gate();
+
+
 
     while (running)
     {  
@@ -257,6 +312,7 @@ int main()
         {
             snake[i] = snake[i-1];
         }
+
         snake[0].first = y;
         snake[0].second = x;
 
