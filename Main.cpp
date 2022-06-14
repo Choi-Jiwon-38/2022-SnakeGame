@@ -35,11 +35,11 @@ void keyControl()
 
             if(input == KEY_UP || input == KEY_DOWN || input == KEY_LEFT || input == KEY_RIGHT)
             {
-                if((input == KEY_UP && key == KEY_DOWN) || (input == KEY_DOWN && key == KEY_UP)
-                    || (input == KEY_LEFT && key == KEY_RIGHT) || (input == KEY_RIGHT && key == KEY_LEFT))
-                    {
-                        running = false;
-                    }
+                // if((input == KEY_UP && key == KEY_DOWN) || (input == KEY_DOWN && key == KEY_UP)
+                //     || (input == KEY_LEFT && key == KEY_RIGHT) || (input == KEY_RIGHT && key == KEY_LEFT))
+                //     {
+                //         running = false;
+                //     }
                 key = input;
             }
             else if(input == 27)
@@ -76,7 +76,7 @@ void init()
     using_color();
 
     // Snake 기본 설정
-    map[y][x] = 3;
+    map[y][x] = '3';
     snake.push_back(pair<int, int>(y, x + 1));
     snake.push_back(pair<int, int>(y, x + 2));
 
@@ -168,7 +168,6 @@ void using_gate()
 {
     int tp_x, tp_y;
 
-
     if (y == gate_pos[0].first && x == gate_pos[0].second)
     {
         tp_y = gate_pos[1].first;
@@ -259,25 +258,20 @@ void collision()
             }
         }
     }
-
-    if (map[x][y] == '1' || map[x][y] == '2' || map[x][y] == '4')
-    {
-        // running = false;
-    }
-
     using_gate();
 
     if (flag_gateUsing)
     {
         if (gate_count > gate_snake_size)
         {
-            flag_gateUsing = false;
-            
+        
             map[gate_pos[0].first][gate_pos[0].second] = '1';
             map[gate_pos[1].first][gate_pos[1].second] = '1';
 
             gate_pos.pop_back();
             gate_pos.pop_back();
+
+            flag_gateUsing = false;
 
             create_gate();
         }
@@ -287,7 +281,7 @@ void collision()
 
 int main()
 {
-    LoadStage(0);
+    LoadStage(3);
 
     init();
     init_draw();
@@ -312,9 +306,10 @@ int main()
         {
             snake[i] = snake[i-1];
         }
-
         snake[0].first = y;
         snake[0].second = x;
+
+        remove_item();
 
         if (key == KEY_LEFT)
             x--;
@@ -324,12 +319,25 @@ int main()
             y--;
         else if (key == KEY_DOWN)
             y++;
-
-        remove_item();
         
+
+        if (map[y][x] == '1')
+        {
+            running = false;
+            break;
+        }
         collision();
 
         map[y][x] = '3';
+
+        for(int i = 0; i < snake.size(); i++)
+            {
+            if (y == snake[i].first && x == snake[i].second)
+            {
+                running = false;
+                break;
+            }
+        }
 
         for (int i = 0; i < snake.size(); i++)
         {
@@ -342,9 +350,9 @@ int main()
 
         GameBoard = newwin(HEIGHT_GB, WIDTH_GB, 2, 2); // 행 크기, 열 크기, 시작 y좌표, 시작 x좌표
 
-        for(int i = 0; i < HEIGHT_GB; i++)
+        for (int i = 0; i < HEIGHT_GB; i++)
         {
-            for(int j = 0; j < WIDTH_GB; j++)
+            for (int j = 0; j < WIDTH_GB; j++)
             {
                 switch (map[i][j])
                 {
@@ -355,7 +363,7 @@ int main()
                         mvwaddch(GameBoard, i, j, '#' | COLOR_PAIR(5));
                         break;
                     case '2':
-                        mvwaddch(GameBoard, i, j, '*' | COLOR_PAIR(4));
+                        mvwaddch(GameBoard, i, j, '/' | COLOR_PAIR(4));
                         break;
                     case '3':
                         mvwaddch(GameBoard, i, j, '*' | COLOR_PAIR(6));
