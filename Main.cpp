@@ -4,6 +4,9 @@
 #include "Item.h"
 #include "gate.h"
 #include "stage.h"
+#include "screen.h"
+// #include <windows.h> // <- WINDOW 전용
+#include <unistd.h> // <- MAC OS 전용
 
 int tmp_x, tmp_y;
 
@@ -97,11 +100,8 @@ void init()
 
 void init_draw()
 {
-    delwin(GameBoard);
-    delwin(ScoreBoard);
-    delwin(MissionBoard);
-    endwin();
-
+    resize_term(HEIGHT_GB + 4, WIDTH_GB * 2);
+    
     mvprintw(1, 2, "GAME BOARD");
     mvprintw(1, 29, "SCORE BOARD");
     mvprintw(14, 29, "MISSION BOARD");
@@ -300,7 +300,13 @@ void collision()
 
 int main()
 {
+    ScreenStart();
     LoadStage(3);
+
+    ScreenLoading(1);
+
+    // Sleep(2000); // WINDOW
+    sleep(2); // MAC
 
     init();
     init_draw();

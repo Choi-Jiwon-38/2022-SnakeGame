@@ -26,6 +26,7 @@ bool running = true;
 WINDOW *GameBoard;
 WINDOW *ScoreBoard;
 WINDOW *MissionBoard;
+WINDOW *LoadingScreen;
 
 static int key = KEY_LEFT; 
 
