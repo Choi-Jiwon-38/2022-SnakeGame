@@ -3,8 +3,16 @@
 #include "init.h"
 #include "Item.h"
 #include "gate.h"
+#include "stage.h"
 
 int tmp_x, tmp_y;
+
+// ScoreBoatd에 갱신할 것들
+int countGrowth = 0;
+int countPosion = 0;
+int countGate = 0;
+int MaxSize = 3;
+
 bool flag = false;
 
 void LoadStage(int stage)
@@ -35,14 +43,14 @@ void keyControl()
 
             if(input == KEY_UP || input == KEY_DOWN || input == KEY_LEFT || input == KEY_RIGHT)
             {
-                // if((input == KEY_UP && key == KEY_DOWN) || (input == KEY_DOWN && key == KEY_UP)
-                //     || (input == KEY_LEFT && key == KEY_RIGHT) || (input == KEY_RIGHT && key == KEY_LEFT))
-                //     {
-                //         running = false;
-                //     }
+                if((input == KEY_UP && key == KEY_DOWN) || (input == KEY_DOWN && key == KEY_UP)
+                    || (input == KEY_LEFT && key == KEY_RIGHT) || (input == KEY_RIGHT && key == KEY_LEFT))
+                    {
+                        running = false;
+                    }
                 key = input;
             }
-            else if(input == 27)
+            else if(input == 27)                // ESC 버튼을 눌렀을 경우
             {
                 running = false;
             }
@@ -139,14 +147,18 @@ void init_draw()
 
 
     ScoreBoard = newwin(HEIGHT_SMB - 1, WIDTH_SMB, 2, 29);
-    mvwprintw(ScoreBoard, 2, 2, "B : 6");
-    mvwprintw(ScoreBoard, 4, 2, "+ : 0");
-    mvwprintw(ScoreBoard, 6, 2, "- : 0");
-    mvwprintw(ScoreBoard, 8, 2, "G : 0");
+    mvwprintw(ScoreBoard, 2, 2, "B : 3 / 3");
+    mvwprintw(ScoreBoard, 4, 2, "+ : %d", countGrowth);
+    mvwprintw(ScoreBoard, 6, 2, "- : %d", countPosion);
+    mvwprintw(ScoreBoard, 8, 2, "G : %d", countGate);
 
     wbkgd(ScoreBoard, COLOR_PAIR(4));
 
     MissionBoard = newwin(HEIGHT_SMB, WIDTH_SMB, 15, 29);
+    mvwprintw(MissionBoard, 2, 2, "B : %d (%c)", MissionBody[0], ' ');
+    mvwprintw(MissionBoard, 4, 2, "+ : %d (%c)", MissionApple[0], ' ');
+    mvwprintw(MissionBoard, 6, 2, "- : %d (%c)", MissionPosion[0], ' ');
+    mvwprintw(MissionBoard, 8, 2, "G : %d (%c)", MissionGate[0], ' ');
     wbkgd(MissionBoard, COLOR_PAIR(4));
 
     refresh();
@@ -183,6 +195,7 @@ void using_gate()
 
     if (flag)
     {   
+        countGate++;
         flag_gateUsing = true;
         gate_count = 0;
         gate_snake_size = snake.size();
@@ -248,12 +261,18 @@ void collision()
             {
                 snake.push_back(pair<int, int> (tmp_y, tmp_x));
                 itemList.erase(itemList.begin() + i);
+                countGrowth++;
                 break;
             }
             else if (map[y][x] == '6')
             {
                 snake.pop_back();
                 itemList.erase(itemList.begin() + i);
+                countPosion++;
+                if (snake.size() < 2)
+                {
+                    running = false;
+                }
                 break;
             }
         }
@@ -346,8 +365,6 @@ int main()
 
         refresh();
 
-        
-
         GameBoard = newwin(HEIGHT_GB, WIDTH_GB, 2, 2); // 행 크기, 열 크기, 시작 y좌표, 시작 x좌표
 
         for (int i = 0; i < HEIGHT_GB; i++)
@@ -382,10 +399,71 @@ int main()
             wrefresh(GameBoard);
         }
 
+        if (snake.size() + 1 >= MaxSize)
+        {
+            MaxSize = snake.size() + 1;
+        } 
+        ///
+        ScoreBoard = newwin(HEIGHT_SMB - 1, WIDTH_SMB, 2, 29);
+        mvwprintw(ScoreBoard, 2, 2, "B : %d / %d", snake.size() + 1, MaxSize);
+        mvwprintw(ScoreBoard, 4, 2, "+ : %d", countGrowth);
+        mvwprintw(ScoreBoard, 6, 2, "- : %d", countPosion);
+        mvwprintw(ScoreBoard, 8, 2, "G : %d", countGate);
+
+        wbkgd(ScoreBoard, COLOR_PAIR(4));
+        ///
+
+        ///
+        MissionBoard = newwin(HEIGHT_SMB, WIDTH_SMB, 15, 29);
+        if (MaxSize >= MissionBody[0])
+        {
+            mvwprintw(MissionBoard, 2, 2, "B : %d (%c)", MissionBody[0], 'V');
+        }
+        else
+        {
+            mvwprintw(MissionBoard, 2, 2, "B : %d (%c)", MissionBody[0], ' ');
+        }
+
+        if (countGrowth >= MissionApple[0])
+        {
+            mvwprintw(MissionBoard, 4, 2, "+ : %d (%c)", MissionApple[0], 'V');
+        }
+        else 
+        {
+            mvwprintw(MissionBoard, 4, 2, "+ : %d (%c)", MissionApple[0], ' ');
+        }
+
+        if (countPosion >= MissionPosion[0])
+        {
+            mvwprintw(MissionBoard, 6, 2, "- : %d (%c)", MissionPosion[0], 'V');
+        }
+        else
+        {
+            mvwprintw(MissionBoard, 6, 2, "- : %d (%c)", MissionPosion[0], ' ');
+        }
+
+        if (countGate >= MissionGate[0])
+        {
+            mvwprintw(MissionBoard, 8, 2, "G : %d (%c)", MissionGate[0], 'V');
+        }
+        else
+        {
+            mvwprintw(MissionBoard, 8, 2, "G : %d (%c)", MissionGate[0], ' ');
+        }
+        wbkgd(MissionBoard, COLOR_PAIR(4));
+
+        refresh();
+        wrefresh(ScoreBoard);
+        wrefresh(MissionBoard);
+        ///
+
         this_thread::sleep_for(chrono::milliseconds(200));
     }
-    if ( key_thread.joinable() )
-        key_thread.join();
 
+    if ( key_thread.joinable() )
+    {
+        key_thread.join();
+    }
+    
     return 0;
 }
