@@ -2,7 +2,6 @@
 #include <ctime>
 #include <cstdlib>
 
-
 time_t startTime;
 time_t currentTime;
 
@@ -40,6 +39,7 @@ void create_item()
         num_of_item++;
     }
 }
+
 void remove_item()
 {
     currentTime = time(NULL);

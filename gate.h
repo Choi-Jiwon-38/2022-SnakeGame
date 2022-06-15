@@ -1,3 +1,5 @@
+#ifndef __GATE__
+#define __GATE__
 #include "init.h"
 #include <cstdlib>
 #include <ctime>
@@ -39,3 +41,4 @@ void create_gate()
         break;
     }
 }
+#endif
