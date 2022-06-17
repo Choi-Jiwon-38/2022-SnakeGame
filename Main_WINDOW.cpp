@@ -4,8 +4,8 @@
 #include "Item.h"
 #include "gate.h"
 #include "screen.h"
-#include <unistd.h> // <- MAC OS 전용
-// #include <windows.h> // <- WINDOW 전용
+// #include <unistd.h> // <- MAC OS 전용
+#include <windows.h> // <- WINDOW 전용
 
 int tmp_x, tmp_y;           // Snake의 tail이 될 후보 (Growth 아이템 먹을 때)
 
@@ -74,12 +74,13 @@ void keyControl() // 키 입력 관리 (비동기 입력 / 스네이크 진행 �
 void using_color() // Curses에 사용될 color pair 호출
 {
     start_color();                              // Color 사용 선언 <- 사용 전에 무조건 선언!
-    init_pair(1, COLOR_WHITE, COLOR_WHITE);
-    init_pair(2, COLOR_BLACK, COLOR_BLACK);
-    init_pair(3, COLOR_WHITE, COLOR_RED);
-    init_pair(4, COLOR_WHITE, COLOR_BLUE);
-    init_pair(5, COLOR_GREEN, COLOR_GREEN);
-    init_pair(6, COLOR_RED, COLOR_RED);
+    init_pair(1, COLOR_WHITE, COLOR_WHITE);     // 빈 공간
+    init_pair(2, COLOR_WHITE, COLOR_BLACK);     // GameBoard 테두리, 글자
+    init_pair(3, COLOR_WHITE, COLOR_YELLOW);    // Snake Body, Head
+    init_pair(4, COLOR_WHITE, COLOR_BLUE);      // Immune Wall
+    init_pair(5, COLOR_WHITE, COLOR_GREEN);     // Wall
+    init_pair(6, COLOR_WHITE, COLOR_RED);       // Item
+    init_pair(7, COLOR_BLACK, COLOR_WHITE);     // MissionBoard, ScoreBoard
 }
 
 void init() // SnakeGame 구동을 위한 초기화 작업
@@ -104,7 +105,7 @@ void init() // SnakeGame 구동을 위한 초기화 작업
     }
 }
 
-void init_draw() // 
+void init_draw() //
 {
     resize_term(HEIGHT_GB + 4, WIDTH_GB * 2);
     
@@ -135,10 +136,10 @@ void init_draw() //
                     mvwaddch(GameBoard, i, j, '*' | COLOR_PAIR(4));
                     break;
                 case '3':
-                    mvwaddch(GameBoard, i, j, '*' | COLOR_PAIR(6));
+                    mvwaddch(GameBoard, i, j, '*' | COLOR_PAIR(3));
                     break;
                 case '4':
-                    mvwaddch(GameBoard, i, j, '-' | COLOR_PAIR(6));
+                    mvwaddch(GameBoard, i, j, '-' | COLOR_PAIR(3));
                     break;
                 case '5':
                     mvwaddch(GameBoard, i, j, 'G' | COLOR_PAIR(6));
@@ -158,14 +159,14 @@ void init_draw() //
     mvwprintw(ScoreBoard, 6, 2, "- : %d", countPosion);
     mvwprintw(ScoreBoard, 8, 2, "G : %d", countGate);
 
-    wbkgd(ScoreBoard, COLOR_PAIR(4));
+    wbkgd(ScoreBoard, COLOR_PAIR(7));
 
     MissionBoard = newwin(HEIGHT_SMB, WIDTH_SMB, 15, 29);
     mvwprintw(MissionBoard, 2, 2, "B : %d (%c)", MissionBody[0], ' ');
     mvwprintw(MissionBoard, 4, 2, "+ : %d (%c)", MissionApple[0], ' ');
     mvwprintw(MissionBoard, 6, 2, "- : %d (%c)", MissionPosion[0], ' ');
     mvwprintw(MissionBoard, 8, 2, "G : %d (%c)", MissionGate[0], ' ');
-    wbkgd(MissionBoard, COLOR_PAIR(4));
+    wbkgd(MissionBoard, COLOR_PAIR(7));
 
     refresh();
     wrefresh(GameBoard);
@@ -251,7 +252,6 @@ void using_gate() // 게이트 입구 -> 출구 동작
             }
         }   
     }
-
 }
 
 void collision() // 아이템 충돌 & 게이트 출입 감지
@@ -347,12 +347,13 @@ int main()
 
         if (stage == 5)
         {
-            sleep(2);
+            Sleep(2000); // WINDOW
+            // sleep(2); // MAX
             return 0;
         }
 
-        // Sleep(2000); // WINDOW
-        sleep(2); // MAC
+        Sleep(2000); // WINDOW
+        // sleep(2); // MAC
 
         init();
         init_draw();
@@ -436,10 +437,10 @@ int main()
                             mvwaddch(GameBoard, i, j, '/' | COLOR_PAIR(4));
                             break;
                         case '3':
-                            mvwaddch(GameBoard, i, j, '*' | COLOR_PAIR(6));
+                            mvwaddch(GameBoard, i, j, '*' | COLOR_PAIR(3));
                             break;
                         case '4':
-                            mvwaddch(GameBoard, i, j, '-' | COLOR_PAIR(6));
+                            mvwaddch(GameBoard, i, j, '-' | COLOR_PAIR(3));
                             break;
                         case '5':
                             mvwaddch(GameBoard, i, j, 'G' | COLOR_PAIR(6));
@@ -463,7 +464,7 @@ int main()
             mvwprintw(ScoreBoard, 4, 2, "+ : %d", countGrowth);
             mvwprintw(ScoreBoard, 6, 2, "- : %d", countPosion);
             mvwprintw(ScoreBoard, 8, 2, "G : %d", countGate);
-            wbkgd(ScoreBoard, COLOR_PAIR(4));
+            wbkgd(ScoreBoard, COLOR_PAIR(7));
     
 
             MissionBoard = newwin(HEIGHT_SMB, WIDTH_SMB, 15, 29);    // MissionBoard 갱신
@@ -502,7 +503,7 @@ int main()
             {
                 mvwprintw(MissionBoard, 8, 2, "G : %d (%c)", MissionGate[stage - 1], ' ');
             }
-            wbkgd(MissionBoard, COLOR_PAIR(4));
+            wbkgd(MissionBoard, COLOR_PAIR(7));
 
             refresh();
             wrefresh(ScoreBoard);
